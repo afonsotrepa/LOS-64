@@ -1,0 +1,41 @@
+(include "~/LOS-64/bin/compiler/include.lisp")
+;;Eval:
+
+(defun eval (e)
+  (cond
+    ((symbolp e) (symbol-lexical-value e))
+    ((atom e) e)
+    ((stringp e) (print "de") e)
+    ((atom (car e))
+     (cond
+       ((eq (car e) 'quote) (cadr e))
+       ((eq (car e) 'atom)  (atom   (eval (cadr e))))
+       ((eq (car e) 'eq)    (eq     (eval (cadr e))
+                                    (eval (caddr e))))
+       ((eq (car e) 'car)   (car    (eval (cadr e))))
+       ((eq (car e) 'cdr)   (cdr    (eval (cadr e))))
+       ((eq (car e) 'cons)  (cons   (eval (cadr e))
+                                    (eval (caddr e))))
+       ((eq (car e) 'cond)  (evcon (cdr e)))
+       ((eq (car e) 'set)   (set (eval (cadr e)) (eval (cddr e))))
+       ((eq (car e) 'setl)  (setl (eval (cadr e)) (eval (cddr e))))
+       ;((eq (car e) 'defun) (set (cadr e) (eval )))
+       (t (apply (eval (car e)) (evlis (cdr e))))))
+    ;;label and lambda not working because I removed the passing of enviroments
+    ;((eq (caar e) 'label)
+     ;(eval (cons (caddar e) (cdr e))
+            ;(cons (list (cadar e) (car e)))))
+    ;((eq (caar e) 'lambda)
+     ;(eval (caddar e)
+            ;(append (pair (cadar e) (evlis (cdr e))))))
+    ))
+
+(defun evcon (c)
+  (cond ((eval (caar c))
+         (eval (cadar c)))
+        (t (evcon (cdr c)))))
+
+(defun evlis (m)
+  (cond ((null m) NIL)
+        (t (cons (eval  (car m))
+                  (evlis (cdr m))))))
